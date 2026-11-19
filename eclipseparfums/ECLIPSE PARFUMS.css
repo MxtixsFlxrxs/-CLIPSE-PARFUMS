@@ -1,0 +1,176 @@
+body {
+    background-color: #080808;
+    color: white;
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+}
+.logo img {
+    width: 150px;
+    height: auto;
+}
+.logo {
+    position: absolute;
+    left: 70px;
+    top: 10px;
+}
+header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 88px;
+    position: relative;
+    background-color: #080808;
+}
+
+nav {
+    display: flex;
+    gap: 75px;
+}
+nav button {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+font-weight: 500;
+letter-spacing: 1px;
+}
+.contacto-btn {
+    background: transparent;
+    border: 2px solid #d1a23c;
+    color: #d1a23c;
+    padding: 14px 30px;
+    font-size: 16px;
+    cursor: pointer;
+    position: absolute;
+right: 70px;
+top: 18px;
+}
+nav button:hover {
+    color: #d1aa28dc;
+}
+h1 {
+    font-size: 50px;
+    margin-left: 70px;
+    margin-top: 40px;
+}
+
+p {
+    font-size: 20px;
+    margin-left: 70px;
+}
+
+body > button {
+    margin-left: 70px;
+    font-size: 16px;
+    padding: 12px 25px;
+}
+.menu {
+    position: relative;
+}
+
+.submenu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: rgba(15, 15, 15, 0.95);
+    padding: 15px;
+    width: 160px;
+}
+
+.menu:hover .submenu {
+    display: flex;
+    flex-direction: column;
+}
+
+.submenu button {
+    margin: 0;
+    padding: 12px;
+    text-align: left;
+}
+h1 {
+    color: white;
+    font-size: 55px;
+    margin-left: 70px;
+    margin-top: 25px;
+    font-family: 'Playfair Display', serif;
+}
+.brand-name {
+    color: #d1a23c;
+    font-size: 18px;
+    letter-spacing: 5px;
+    margin-top: 0;
+    margin-bottom: 25px;
+}
+body > button {
+    background: transparent;
+    border: 2px solid #d1a23c;
+    color: white;
+    padding: 15px 30px;
+    font-size: 16px;
+    cursor: pointer;
+}
+.coleccion {
+    background: transparent;
+    border: 2px solid #d1aa28dc;
+    color: #d1aa28dc;
+    font-size: 16px;
+    cursor: pointer;
+    text-transform: uppercase;
+letter-spacing: 1px;
+padding: 16px 30px;
+margin-left: 70px;
+font-weight: 600;
+}
+.coleccion span {
+    margin-left: 12px;
+    font-size: 24px;
+    font-weight: 300;
+}
+.beneficios {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #080808;
+    padding: 20px;
+    margin-top: 0;
+    height: 210px;
+    box-sizing: border-box;
+}
+
+.beneficio {
+    width: 22%;
+    text-align: center;
+}
+
+.beneficio h3 {
+    color: white;
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.beneficio p {
+    color: #b0b0b0;
+    font-size: 15px;
+    line-height: 1.6;
+    margin-left: 0;
+}
+.beneficio i {
+    color: #d1a23c;
+    font-size: 35px;
+    margin-bottom: 15px;
+}
+h1 span {
+    color: #d1a23c;
+}
+.hero {
+    background-image: url("fondo-chat\ .png");
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    height: calc(100vh - 100px - 210px);
+    box-sizing: border-box;
+  padding-top: 90px;
+}
