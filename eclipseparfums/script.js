@@ -628,6 +628,528 @@ document.getElementById("formContacto").addEventListener("submit", function (eve
     }
 });
 
+/* ---------- 7. SBDDA - ASISTENTE DE CHAT ---------- */
+const chat = document.getElementById("chat");
+const chatMensajes = document.getElementById("chatMensajes");
+const chatInput = document.getElementById("chatInput");
+let chatIniciado = false;
+
+/* Lo que SBDDA recuerda de la conversación */
+const memoria = {
+    genero: null,
+    familia: null,
+    ocasion: null,
+    presupuesto: null,
+    barato: false,
+    etiqueta: null,
+    resultados: [],   // última lista de recomendaciones
+    mostrados: 0,     // cuántos de esa lista ya mostró
+    ultimoProducto: null
+};
+
+function abrirChat() {
+    chat.classList.add("abierto");
+    if (!chatIniciado) {
+        chatIniciado = true;
+        respuestaBot({
+            texto: "¡Hola! Soy SBDDA, el asistente de Éclipse Parfums ✨\nEscríbeme con tus palabras: puedo decirte si tenemos un perfume, recomendarte uno según tus gustos y tu presupuesto, o ayudarte con envíos y pagos.",
+            sugerencias: ["¿Tienen Sauvage?", "Algo dulce para la noche", "Regalo para mi novia", "Hablar con un asesor"]
+        });
+    }
+    chatInput.focus();
+}
+
+function cerrarChat() {
+    chat.classList.remove("abierto");
+}
+
+document.getElementById("chatBurbuja").addEventListener("click", function () {
+    chat.classList.contains("abierto") ? cerrarChat() : abrirChat();
+});
+document.getElementById("cerrarChat").addEventListener("click", cerrarChat);
+document.getElementById("abrirChatBanner").addEventListener("click", abrirChat);
+document.getElementById("abrirChatContacto").addEventListener("click", abrirChat);
+
+/* Dibuja un mensaje en el chat */
+function agregarMensaje(respuesta, quien) {
+    const burbuja = document.createElement("div");
+    burbuja.className = "msg " + quien;
+    burbuja.textContent = respuesta.texto; // textContent evita que se inyecte HTML
+
+    (respuesta.productos || []).forEach(function (p) {
+        const item = document.createElement("div");
+        item.className = "chat-producto";
+        item.innerHTML =
+            '<img class="mini-foto" src="' + rutaFoto(p) + '" alt="" onerror="this.style.visibility=\'hidden\'">' +
+            "<div><strong>" + p.nombre + "</strong><small>" + p.marca + " · " + formatoPrecio(p.precio) + "</small></div>" +
+            '<button data-agregar="' + p.id + '" aria-label="Agregar al carrito" title="Agregar al carrito"><i class="fa-solid fa-plus"></i></button>';
+        burbuja.appendChild(item);
+    });
+
+    if (respuesta.enlace) {
+        const a = document.createElement("a");
+        a.className = "chat-link";
+        a.href = respuesta.enlace.url;
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.textContent = respuesta.enlace.texto;
+        burbuja.appendChild(document.createElement("br"));
+        burbuja.appendChild(a);
+    }
+
+    chatMensajes.appendChild(burbuja);
+    chatMensajes.scrollTop = chatMensajes.scrollHeight;
+}
+
+function mostrarSugerencias(lista) {
+    const contenedor = document.getElementById("chatSugerencias");
+    contenedor.innerHTML = "";
+    (lista || []).forEach(function (texto) {
+        const boton = document.createElement("button");
+        boton.type = "button";
+        boton.textContent = texto;
+        boton.addEventListener("click", function () {
+            enviarMensaje(texto);
+        });
+        contenedor.appendChild(boton);
+    });
+}
+
+/* SBDDA "escribe" un momento y luego responde */
+function respuestaBot(respuesta) {
+    const escribiendo = document.createElement("div");
+    escribiendo.className = "msg bot escribiendo";
+    escribiendo.innerHTML = "<span></span><span></span><span></span>";
+    chatMensajes.appendChild(escribiendo);
+    chatMensajes.scrollTop = chatMensajes.scrollHeight;
+    mostrarSugerencias([]);
+
+    setTimeout(function () {
+        escribiendo.remove();
+        agregarMensaje(respuesta, "bot");
+        mostrarSugerencias(respuesta.sugerencias);
+        if (respuesta.accion) respuesta.accion();
+    }, 650 + Math.min(respuesta.texto.length * 4, 900));
+}
+
+/* ¿El texto contiene alguna de estas palabras o partes de palabra? */
+function contiene(texto, palabras) {
+    return palabras.some(function (p) { return texto.includes(p); });
+}
+
+/* ¿El texto contiene alguna de estas palabras COMPLETAS? */
+function tienePalabra(palabrasTexto, lista) {
+    return lista.some(function (p) { return palabrasTexto.includes(p); });
+}
+
+/* Palabras que no sirven para reconocer el nombre de un perfume */
+const palabrasVacias = ["de", "di", "d", "du", "eau", "pour", "the", "in", "la", "le", "l", "el", "by", "for", "and", "co", "parfum", "toilette"];
+
+/* Versiones especiales que puede pedir el cliente (ej: "1 Million Elixir") */
+const variantes = ["elixir", "intense", "intensely", "absolu", "extreme", "parfum", "prive", "noir", "platinum", "lucky", "royal", "privee", "sport", "gold", "rouge", "fraiche", "edp", "edt", "absolute", "collector"];
+
+function palabrasDe(texto) {
+    return normalizar(texto).replace(/[^a-z0-9ñ ]/g, " ").split(/\s+/).filter(Boolean);
+}
+
+/* Palabras de nombres de perfume que también se usan en conversación normal:
+   solas no bastan para reconocer un perfume */
+const palabrasComunes = ["agua", "fresca", "fresco", "blue", "light", "black", "one", "only", "code", "rose", "flower", "bottled", "men", "her", "homme", "avenue", "vip", "sens", "colonia", "sandalo", "orchid", "intense"];
+
+/* Busca perfumes por su nombre dentro de lo que escribió el usuario.
+   Si dice hombre o mujer, da prioridad a ese género. */
+function buscarPerfumes(palabrasTexto, genero) {
+    let candidatos = [];
+    const textoPlano = " " + palabrasTexto.join(" ") + " ";
+
+    productos.forEach(function (p) {
+        const marca = palabrasDe(p.marca);
+        const claves = palabrasDe(p.nombre).filter(function (w) {
+            return !palabrasVacias.includes(w) && !(w.length === 1 && /\d/.test(w)) && !marca.includes(w);
+        });
+        if (claves.length === 0) return; // el nombre es solo la marca (ej: Chloé)
+
+        const coinciden = claves.filter(function (w) { return palabrasTexto.includes(w); });
+        if (coinciden.length === 0) return;
+
+        const dijoMarca = marca.some(function (w) { return w.length > 2 && palabrasTexto.includes(w); });
+        const frase = palabrasDe(p.nombre).slice(0, 2).join(" ");
+        const dijoFrase = frase.includes(" ") && textoPlano.includes(" " + frase + " ");
+        if (coinciden.length === 1 && palabrasComunes.includes(coinciden[0]) && !dijoMarca && !dijoFrase) return;
+
+        let puntaje = coinciden.length / claves.length;
+        if (dijoMarca) puntaje += 0.4;
+        if (puntaje < 0.5) return;
+        if (genero && p.genero === genero) puntaje += 0.3;
+        puntaje += coinciden.length * 0.01; // desempate: gana el que coincide en más palabras
+        candidatos.push({ p: p, puntaje: puntaje });
+    });
+
+    if (candidatos.length === 0) return [];
+    const mejor = Math.max.apply(null, candidatos.map(function (c) { return c.puntaje; }));
+    return candidatos.filter(function (c) { return mejor - c.puntaje < 0.001; }).map(function (c) { return c.p; });
+}
+
+/* Busca perfumes de una marca (ej: "¿qué tienen de Dior?") */
+function buscarMarca(textoNormal) {
+    const marcas = [...new Set(productos.map(function (p) { return p.marca; }))];
+    const encontrada = marcas.find(function (m) {
+        const mm = normalizar(m).replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+        return (" " + textoNormal + " ").includes(" " + mm + " ");
+    });
+    if (!encontrada) return null;
+    return { marca: encontrada, lista: productos.filter(function (p) { return p.marca === encontrada; }) };
+}
+
+function describirOcasion(p) {
+    return p.ocasion.map(function (o) { return o === "dia" ? "el día" : "la noche"; }).join(" y ");
+}
+
+function fichaPerfume(p) {
+    let texto = "¡Sí, lo tenemos! 🙌\n" + p.nombre + " de " + p.marca +
+        " (" + (p.genero === "hombre" ? "hombre" : "mujer") + ")\n" +
+        "Notas: " + p.notas + "\n" +
+        "Ideal para " + describirOcasion(p) + ".\n" +
+        "Precio: " + formatoPrecio(p.precio);
+    if (p.precioAntes) texto += " (antes " + formatoPrecio(p.precioAntes) + ", ¡está en oferta!)";
+    texto += "\n¿Quieres que lo agregue a tu carrito?";
+    return texto;
+}
+
+/* Lee lo que pide el cliente: género, tipo de aroma, ocasión, presupuesto... */
+function leerPreferencias(t, w) {
+    const pref = {};
+
+    if (tienePalabra(w, ["hombre", "hombres", "caballero", "novio", "esposo", "papa", "padre", "papi", "hermano", "hijo", "amigo", "jefe", "tio", "abuelo", "masculino", "masculina", "chico", "varon"])) pref.genero = "hombre";
+    if (tienePalabra(w, ["mujer", "mujeres", "dama", "novia", "esposa", "mama", "madre", "mami", "hermana", "hija", "amiga", "jefa", "tia", "abuela", "femenino", "femenina", "chica", "ella", "enamorada"])) pref.genero = "mujer";
+
+    if (contiene(t, ["dulce", "vainilla", "caramelo", "gourmand", "goloso", "azucarad", "chocolate", "cafe"])) pref.familia = "dulce";
+    if (contiene(t, ["fresc", "citric", "limon", "verano", "calor", "playa", "deporte", "gym", "gimnasio", "limpio", "ligero", "suave", "marino", "acuatic"])) pref.familia = "fresco";
+    if (contiene(t, ["amader", "madera", "elegante", "serio", "oud", "cuero", "intenso", "fuerte", "masculino fuerte"])) pref.familia = "amaderado";
+    if (contiene(t, ["floral", "flores", "flor ", "rosa", "jazmin", "romantic"])) pref.familia = "floral";
+
+    if (contiene(t, ["noche", "fiesta", "cita", "salir", "discoteca", "boda", "evento", "cena", "seducir", "conquistar", "antro", "farra"])) pref.ocasion = "noche";
+    if (contiene(t, [" dia", "dia ", "diario", "oficina", "trabajo", "universidad", "colegio", "clases", "todos los dias", "mañana", "manana"])) pref.ocasion = "dia";
+
+    const numero = t.match(/(?:menos de|hasta|maximo|no mas de|por debajo de|presupuesto(?: de)?|tengo|gastar|alrededor de|unos)\s*\$?\s*(\d{2,4})/) || t.match(/\$\s*(\d{2,4})/) || t.match(/(\d{2,4})\s*(?:dolares|usd|\$)/);
+    if (numero) pref.presupuesto = Number(numero[1]);
+
+    if (contiene(t, ["barato", "economic", "accesible", "no muy caro", "no tan caro", "poco dinero", "bajo precio"])) pref.barato = true;
+    if (contiene(t, ["oferta", "descuento", "promo", "rebaja"])) pref.etiqueta = "oferta";
+    if (contiene(t, ["nuevo", "nueva", "novedad", "lanzamiento", "reciente"])) pref.etiqueta = "nuevo";
+    if (contiene(t, ["mas vendido", "popular", "famoso", "favorito", "top"])) pref.etiqueta = "masvendido";
+
+    return pref;
+}
+
+/* Filtra el catálogo con lo que SBDDA recuerda y devuelve la lista ordenada */
+function recomendar() {
+    let lista = productos.filter(function (p) {
+        return (!memoria.genero || p.genero === memoria.genero) &&
+               (!memoria.familia || p.familia.includes(memoria.familia)) &&
+               (!memoria.ocasion || p.ocasion.includes(memoria.ocasion)) &&
+               (!memoria.presupuesto || p.precio <= memoria.presupuesto) &&
+               (!memoria.etiqueta || p.etiquetas.includes(memoria.etiqueta));
+    });
+
+    lista.sort(function (a, b) {
+        if (memoria.barato) return a.precio - b.precio;
+        const va = (a.etiquetas.includes("masvendido") ? 2 : 0) + (a.etiquetas.includes("oferta") ? 1 : 0);
+        const vb = (b.etiquetas.includes("masvendido") ? 2 : 0) + (b.etiquetas.includes("oferta") ? 1 : 0);
+        return vb - va;
+    });
+
+    return lista;
+}
+
+/* Explica en una frase lo que el cliente está buscando */
+function resumenBusqueda() {
+    const partes = [memoria.familia ? "algo " + memoria.familia : "perfumes"];
+    if (memoria.genero) partes.push("para " + memoria.genero);
+    if (memoria.ocasion) partes.push(memoria.ocasion === "dia" ? "para el día" : "para la noche");
+    if (memoria.presupuesto) partes.push("de hasta " + formatoPrecio(memoria.presupuesto));
+    if (memoria.etiqueta === "oferta") partes.push("en oferta");
+    if (memoria.etiqueta === "nuevo") partes.push("de lo más nuevo");
+    if (memoria.etiqueta === "masvendido") partes.push("entre los más vendidos");
+    if (memoria.barato) partes.push("al mejor precio");
+    return partes.join(", ");
+}
+
+function siguientesSugerencias() {
+    const s = [];
+    if (!memoria.genero) s.push("Para hombre", "Para mujer");
+    if (!memoria.familia) s.push("Algo dulce", "Algo fresco", "Algo amaderado");
+    else if (!memoria.ocasion) s.push("Para la noche", "Para el día");
+    if (memoria.resultados.length > memoria.mostrados) s.push("Ver más opciones");
+    if (!memoria.presupuesto && s.length < 4) s.push("Menos de $100");
+    return s.slice(0, 4);
+}
+
+function mostrarRecomendaciones(intro) {
+    const pagina = memoria.resultados.slice(memoria.mostrados, memoria.mostrados + 3);
+    memoria.mostrados += pagina.length;
+    if (pagina.length === 1) memoria.ultimoProducto = pagina[0];
+
+    return {
+        texto: intro + "\nToca + para agregarlo al carrito:",
+        productos: pagina,
+        sugerencias: siguientesSugerencias()
+    };
+}
+
+/* El "cerebro" de SBDDA: decide qué responder */
+function pensarRespuesta(mensaje) {
+    const t = " " + normalizar(mensaje).replace(/[¿?¡!.,;:()"]/g, " ").replace(/\s+/g, " ").trim() + " ";
+    const w = palabrasDe(mensaje);
+
+    // Quitamos los saludos para ver si hay una pregunta real detrás
+    const saludos = ["hola", "holi", "buenas", "buenos", "buen", "dias", "tardes", "noches", "hey", "saludos", "que", "tal", "oye", "oiga", "disculpa", "disculpe", "porfa", "por", "favor", "amigo", "amiga", "sbdda", "como", "estas", "esta", "bien", "hi"];
+    const resto = w.filter(function (x) { return !saludos.includes(x); });
+    const esSaludo = tienePalabra(w, ["hola", "holi", "buenas", "buenos", "hey", "saludos", "hi"]);
+
+    // 1. Solo saludó
+    if (esSaludo && resto.length === 0) {
+        const comoEstas = contiene(t, ["como estas", "que tal", "como esta"]);
+        return {
+            texto: (comoEstas ? "¡Hola! Muy bien, gracias por preguntar 😊 " : "¡Hola! 😊 ") + "¿Buscas un perfume para ti o es para regalar?",
+            sugerencias: ["Es para mí", "Es un regalo", "Ver ofertas", "¿Tienen 1 Million Elixir?"]
+        };
+    }
+
+    // Desde aquí trabajamos sin las frases de saludo ("buenos días" no es "para el día")
+    const tSinSaludo = t.replace(/ buen(os|as)? (dias?|tardes|noches) /g, " ").replace(/ (hola|holi|hey|saludos) /g, " ");
+    return analizar(tSinSaludo, w);
+}
+
+function analizar(t, w) {
+    const saludosExtra = ["hola", "holi", "buenas", "buenos", "buen", "dias", "tardes", "noches", "hey", "saludos", "que", "tal", "oye", "oiga", "disculpa", "disculpe", "porfa", "por", "favor", "amigo", "amiga", "sbdda", "como", "estas", "esta", "bien", "hi"];
+    const resto = w.filter(function (x) { return !saludosExtra.includes(x); });
+    // 2. Preguntas sobre SBDDA
+    if (contiene(t, ["quien eres", "como te llamas", "que eres", "eres una ia", "eres un robot", "eres humano", "eres real", "tu nombre"])) {
+        return { texto: "Soy SBDDA 🤖, el asistente virtual de Éclipse Parfums. Te ayudo a encontrar tu perfume ideal, te digo precios y disponibilidad, y te cuento sobre envíos y pagos. Si prefieres hablar con una persona, te paso con un asesor por WhatsApp." };
+    }
+
+    // 3. Agradecimientos y despedidas
+    if (tienePalabra(w, ["gracias", "grax", "thanks"]) && resto.length <= 4) {
+        return { texto: "¡Con gusto! Si necesitas algo más, aquí estoy 😊", sugerencias: ["Ver ofertas", "Hablar con un asesor"] };
+    }
+    if (tienePalabra(w, ["adios", "chao", "chau", "bye"]) || contiene(t, ["hasta luego", "nos vemos"])) {
+        return { texto: "¡Hasta pronto! Gracias por visitar Éclipse Parfums ✨" };
+    }
+
+    // 4. Reiniciar la búsqueda
+    if (contiene(t, ["empezar de nuevo", "reiniciar", "olvida", "otra cosa", "borrar"])) {
+        Object.assign(memoria, { genero: null, familia: null, ocasion: null, presupuesto: null, barato: false, etiqueta: null, resultados: [], mostrados: 0 });
+        return { texto: "¡Listo, empezamos de cero! ¿Qué estás buscando?", sugerencias: ["Para hombre", "Para mujer", "Ver ofertas"] };
+    }
+
+    // 5. "Sí, agrégalo" después de mostrar un perfume
+    const diceQueSi = (tienePalabra(w, ["si", "dale", "ok", "okey", "listo", "claro", "agregalo", "agregala", "comprarlo", "porfa"]) && resto.length <= 3) ||
+        contiene(t, [" lo quiero", " lo compro", "agregalo", "agregar al carrito", "anadelo", "ponlo en el carrito"]);
+    if (memoria.ultimoProducto && diceQueSi && buscarPerfumes(w).length === 0) {
+        const p = memoria.ultimoProducto;
+        memoria.ultimoProducto = null;
+        return {
+            texto: "¡Hecho! Agregué " + p.nombre + " a tu carrito 🛍️ Cuando quieras, abre el carrito y toca \"Finalizar compra\" para pagar con tarjeta o PayPal.",
+            sugerencias: ["Ver carrito", "Seguir viendo perfumes"],
+            accion: function () { agregarAlCarrito(p.id); }
+        };
+    }
+    if (contiene(t, ["ver carrito", "mi carrito", "abrir carrito"])) {
+        return { texto: "¡Te abro el carrito! 🛍️", accion: abrirCarrito };
+    }
+
+    // 6. Preguntas frecuentes
+    if (contiene(t, ["envio", "envian", "delivery", "domicilio", "entrega", "llega", "demora", "cuanto tarda", "mandan"])) {
+        return { texto: "Hacemos envíos a todo Ecuador 🚚\nLlegan en 24 a 72 horas según tu ciudad. El envío cuesta $5 y es GRATIS en compras desde $100." };
+    }
+    if (contiene(t, ["pago", "pagar", "tarjeta", "transferencia", "efectivo", "paypal", "credito", "debito", "cuotas", "diferido"])) {
+        return { texto: "Puedes pagar con tarjeta de crédito (hasta 12 cuotas), tarjeta de débito o PayPal 💳\nSolo agrega tus perfumes al carrito y toca \"Finalizar compra\"." };
+    }
+    if (contiene(t, ["original", "autentic", "replica", "falso", "garantia", "imitacion", "clon"])) {
+        return { texto: "Todos nuestros perfumes son 100% originales y vienen sellados de fábrica ✅" };
+    }
+    if (contiene(t, ["horario", "atienden", "abren", "cierran", "a que hora"])) {
+        return { texto: "Atendemos de lunes a sábado, de 8:00 a 17:00 🕗" };
+    }
+    if (contiene(t, ["devolu", "cambio", "reembolso", "garantia"])) {
+        return { texto: "Si tu perfume llega con algún problema, tienes 7 días para cambiarlo. Solo debe estar sellado y sin usar 📦", sugerencias: ["Hablar con un asesor"] };
+    }
+    if (contiene(t, ["ubicacion", "donde estan", "donde quedan", "direccion", "local", "tienda fisica"])) {
+        return { texto: "Estamos en Samborondón, Guayaquil 📍 y hacemos envíos a todo Ecuador. Para coordinar una entrega, escríbenos por WhatsApp.", enlace: { texto: "Escribir por WhatsApp", url: "https://wa.me/" + WHATSAPP } };
+    }
+    if (contiene(t, ["asesor", "humano", "persona", "contacto", "contactar", "whatsapp", "telefono", "numero", "correo", "llamar", "hablar con alguien"])) {
+        return {
+            texto: "¡Claro! Puedes hablar con un asesor por WhatsApp 📲\n+593 99 644 3092\nCorreo: contacto@eclipseparfums.com\nHorario: lunes a sábado, 8:00 a 17:00",
+            enlace: { texto: "Abrir WhatsApp", url: "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent("Hola Éclipse Parfums, quisiera más información") }
+        };
+    }
+
+    // 7. ¿Pregunta por un perfume en específico?
+    const encontrados = buscarPerfumes(w, leerPreferencias(t, w).genero);
+    if (encontrados.length > 0) {
+        const lista = encontrados;
+
+        if (lista.length === 1) {
+            const p = lista[0];
+            const nombreNormal = palabrasDe(p.nombre);
+            // ¿Pidió una versión que no tenemos? (ej: "1 Million Elixir")
+            const pedida = w.find(function (x) { return variantes.includes(x) && !nombreNormal.includes(x); });
+            memoria.ultimoProducto = p;
+            if (pedida) {
+                return {
+                    texto: "Por ahora no tenemos la versión \"" + pedida.charAt(0).toUpperCase() + pedida.slice(1) + "\" 😔, pero sí tenemos " + p.nombre + " de " + p.marca + ":\n" +
+                        "Notas: " + p.notas + "\nPrecio: " + formatoPrecio(p.precio) + (p.precioAntes ? " (¡en oferta!)" : "") +
+                        "\n¿Te lo agrego al carrito? También puedo consultar con un asesor si llega la versión que buscas.",
+                    productos: [p],
+                    sugerencias: ["Sí, agrégalo", "Algo parecido", "Hablar con un asesor"]
+                };
+            }
+            return { texto: fichaPerfume(p), productos: [p], sugerencias: ["Sí, agrégalo", "Algo parecido", "Ver más opciones de " + p.marca] };
+        }
+
+        memoria.ultimoProducto = null;
+        return { texto: "Encontré estas opciones que coinciden con lo que escribiste:", productos: lista.slice(0, 4), sugerencias: ["Para hombre", "Para mujer"] };
+    }
+
+    // 8. "Algo parecido" al último perfume que vio
+    if (contiene(t, ["parecido", "similar", "igual a", "como ese", "como el"]) && memoria.ultimoProducto) {
+        const base = memoria.ultimoProducto;
+        Object.assign(memoria, { genero: base.genero, familia: base.familia[0], ocasion: null, presupuesto: null, barato: false, etiqueta: null });
+        memoria.resultados = recomendar().filter(function (p) { return p.id !== base.id; });
+        memoria.mostrados = 0;
+        return mostrarRecomendaciones("Si te gusta " + base.nombre + ", estos tienen un estilo " + base.familia[0] + " parecido ✨");
+    }
+
+    // 9. ¿Pregunta por una marca?
+    const deMarca = buscarMarca(t);
+    if (deMarca) {
+        memoria.resultados = deMarca.lista;
+        memoria.mostrados = 0;
+        return mostrarRecomendaciones("De " + deMarca.marca + " tenemos " + deMarca.lista.length + (deMarca.lista.length === 1 ? " perfume" : " perfumes") + ":");
+    }
+
+    // 10. "Ver más opciones"
+    if (contiene(t, ["mas opciones", "otras opciones", "otro", "otra", "otros", "ver mas", "algo mas", "diferente", "siguiente"])) {
+        if (memoria.resultados.length > memoria.mostrados) {
+            return mostrarRecomendaciones("Aquí tienes más opciones:");
+        }
+        if (memoria.resultados.length > 0) {
+            return { texto: "Esas eran todas las opciones con esas características 😊 ¿Quieres que cambie algo? Por ejemplo, el tipo de aroma o el presupuesto.", sugerencias: ["Algo dulce", "Algo fresco", "Empezar de nuevo"] };
+        }
+    }
+
+    // 11. El más barato o el más caro
+    if (contiene(t, ["mas barato", "mas economico", "menor precio", "precio mas bajo"])) {
+        const pref = leerPreferencias(t, w);
+        const lista = productos.filter(function (p) { return !pref.genero || p.genero === pref.genero; })
+            .sort(function (a, b) { return a.precio - b.precio; });
+        memoria.resultados = lista;
+        memoria.mostrados = 0;
+        return mostrarRecomendaciones("Estos son nuestros perfumes más económicos" + (pref.genero ? " para " + pref.genero : "") + " 💸");
+    }
+    if (contiene(t, ["mas caro", "mas exclusivo", "mas lujoso", "mejor perfume", "el mejor"])) {
+        const pref = leerPreferencias(t, w);
+        const lista = productos.filter(function (p) { return !pref.genero || p.genero === pref.genero; })
+            .sort(function (a, b) { return b.precio - a.precio; });
+        memoria.resultados = lista;
+        memoria.mostrados = 0;
+        return mostrarRecomendaciones("Estos son los más exclusivos de nuestra colección 👑");
+    }
+
+    // 12. Información del catálogo
+    if (contiene(t, ["que marcas", "cuales marcas", "marcas tienen", "marcas venden"])) {
+        const marcas = [...new Set(productos.map(function (p) { return p.marca; }))].sort();
+        return { texto: "Trabajamos con estas marcas:\n" + marcas.join(", ") + ".\nPregúntame por cualquiera 😉" };
+    }
+    if (contiene(t, ["cuantos perfumes", "cuantos tienen", "catalogo completo", "todos los perfumes"])) {
+        const h = productos.filter(function (p) { return p.genero === "hombre"; }).length;
+        return {
+            texto: "Tenemos " + productos.length + " perfumes: " + h + " para hombre y " + (productos.length - h) + " para mujer. ¿Te abro el catálogo?",
+            sugerencias: ["Ver catálogo de hombre", "Ver catálogo de mujer"]
+        };
+    }
+    if (contiene(t, ["catalogo de hombre", "catalogo hombre"])) {
+        return { texto: "¡Te llevo al catálogo de hombre! 👔", accion: function () { mostrarVista("hombre"); } };
+    }
+    if (contiene(t, ["catalogo de mujer", "catalogo mujer"])) {
+        return { texto: "¡Te llevo al catálogo de mujer! 👗", accion: function () { mostrarVista("mujer"); } };
+    }
+    if (contiene(t, ["seguir viendo"])) {
+        return { texto: "¡Perfecto! Sigue explorando y aquí estaré si me necesitas 😊", sugerencias: ["Para hombre", "Para mujer"] };
+    }
+
+    // 13. Recomendación según lo que pide (y lo que ya dijo antes)
+    const pref = leerPreferencias(t, w);
+    const tieneAlgo = pref.genero || pref.familia || pref.ocasion || pref.presupuesto || pref.barato || pref.etiqueta;
+
+    if (tieneAlgo) {
+        // Si es una búsqueda nueva (no un simple ajuste), olvidamos la anterior
+        const campos = ["genero", "familia", "ocasion", "presupuesto", "etiqueta", "barato"].filter(function (k) { return pref[k]; }).length;
+        if (campos >= 2 || (pref.genero && w.length > 3) || contiene(t, ["regalo", "regalar"])) {
+            Object.assign(memoria, { genero: null, familia: null, ocasion: null, presupuesto: null, barato: false, etiqueta: null });
+        }
+        ["genero", "familia", "ocasion", "presupuesto", "etiqueta"].forEach(function (k) {
+            if (pref[k]) memoria[k] = pref[k];
+        });
+        if (pref.barato) memoria.barato = true;
+
+        memoria.resultados = recomendar();
+        memoria.mostrados = 0;
+
+        if (memoria.resultados.length === 0) {
+            memoria.presupuesto = null;
+            return {
+                texto: "No encontré " + resumenBusqueda() + " 😔 ¿Probamos cambiando algo?",
+                sugerencias: ["Algo dulce", "Algo fresco", "Algo floral", "Empezar de nuevo"]
+            };
+        }
+        return mostrarRecomendaciones("Si buscas " + resumenBusqueda() + ", te recomiendo ✨");
+    }
+
+    // 14. Regalo o para sí mismo, sin más datos
+    if (contiene(t, ["regalo", "regalar", "obsequio", "sorprender", "cumpleanos", "aniversario"])) {
+        return { texto: "¡Qué buen detalle! 🎁 ¿Para quién es el regalo? Cuéntame también si le gustan los aromas dulces, frescos o amaderados.", sugerencias: ["Para mi novia", "Para mi novio", "Para mi mamá", "Para mi papá"] };
+    }
+    if (contiene(t, ["para mi", "es para mi"])) {
+        return { texto: "¡Genial! ¿Buscas perfume de hombre o de mujer? ¿Y qué aromas te gustan?", sugerencias: ["Para hombre", "Para mujer", "Algo dulce", "Algo fresco"] };
+    }
+
+    // 15. Preguntó por un perfume que no está en el catálogo
+    if (contiene(t, ["tienen", "tienes", "venden", "vendes", "hay ", "disponible", "en venta", "stock", "precio", "cuesta", "cuanto vale", "cuanto es"])) {
+        return {
+            texto: "No encontré ese perfume en nuestro catálogo 😔 Puede que llegue pronto. Si quieres, un asesor puede confirmarte si lo conseguimos, o te recomiendo algo parecido.",
+            sugerencias: ["Hablar con un asesor", "Recomiéndame algo", "Ver ofertas"]
+        };
+    }
+
+    if (contiene(t, ["recomienda", "recomendacion", "perfume", "fragancia", "aroma", "olor", "cual", "busco", "quiero", "ayuda", "no se"])) {
+        return { texto: "¡Te ayudo a elegir! Cuéntame un poco más: ¿es para hombre o para mujer? ¿Lo prefieres dulce, fresco, floral o amaderado? ¿Para el día o la noche?", sugerencias: ["Para hombre", "Para mujer", "Algo dulce", "Algo fresco"] };
+    }
+
+    // 16. No entendió
+    return {
+        texto: "Mmm, no estoy seguro de haber entendido 🤔\nPuedes preguntarme cosas como:\n• \"¿Tienen el Bad Boy?\"\n• \"Algo dulce para mi novia de menos de $100\"\n• \"¿Cuánto tarda el envío?\"",
+        sugerencias: ["Recomiéndame un perfume", "Ver ofertas", "Hablar con un asesor"]
+    };
+}
+
+function enviarMensaje(texto) {
+    texto = texto.trim();
+    if (!texto) return;
+
+    agregarMensaje({ texto: texto }, "usuario");
+    chatInput.value = "";
+
+    // Las sugerencias de "Ver más opciones de [marca]" se entienden como la marca
+    respuestaBot(pensarRespuesta(texto.replace(/^Ver más opciones de /, "")));
+}
+
+document.getElementById("chatForm").addEventListener("submit", function (evento) {
+    evento.preventDefault();
+    enviarMensaje(chatInput.value);
+});
+
 /* ---------- INICIO: cuando carga la página ---------- */
 mostrarDestacados();
 actualizarCarrito();

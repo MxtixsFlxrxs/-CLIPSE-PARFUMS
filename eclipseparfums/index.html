@@ -120,6 +120,14 @@
                 <div class="grid-productos" id="gridDestacados"></div>
             </div>
 
+            <div class="banner-ia">
+                <i class="fa-solid fa-robot"></i>
+                <div>
+                    <h3>¿No sabes cuál elegir?</h3>
+                    <p>SBDDA, nuestro asistente, te recomienda el perfume ideal según tus gustos, tu presupuesto y la ocasión.</p>
+                </div>
+                <button class="btn-dorado" id="abrirChatBanner"><i class="fa-solid fa-robot"></i> Hablar con SBDDA (asistente)</button>
+            </div>
         </section>
 
         <!-- ===================== VISTA: CATÁLOGO (hombre / mujer) ===================== -->
@@ -240,6 +248,28 @@
             <button class="btn-dorado lleno" id="finalizarCompra">Finalizar compra</button>
         </div>
     </aside>
+
+    <!-- ===================== CHAT CON EL ASISTENTE ===================== -->
+    <button class="chat-burbuja" id="chatBurbuja" aria-label="Abrir asistente SBDDA" title="Habla con SBDDA">
+        <i class="fa-solid fa-comment-dots"></i>
+    </button>
+
+    <div class="chat" id="chat">
+        <div class="chat-header">
+            <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
+            <div>
+                <h4>Asistente SBDDA</h4>
+                <span><i class="fa-solid fa-circle"></i> En línea · Éclipse Parfums</span>
+            </div>
+            <button class="cerrar" id="cerrarChat" aria-label="Cerrar chat"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="chat-mensajes" id="chatMensajes"></div>
+        <div class="chat-sugerencias" id="chatSugerencias"></div>
+        <form class="chat-form" id="chatForm">
+            <input type="text" id="chatInput" placeholder="Escríbele a SBDDA..." autocomplete="off">
+            <button type="submit" aria-label="Enviar"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+    </div>
 
     <!-- ===================== PAGO (CHECKOUT) ===================== -->
     <div class="modal" id="modalPago">

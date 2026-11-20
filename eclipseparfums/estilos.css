@@ -524,6 +524,37 @@ h1 span {
     color: var(--negro);
 }
 
+/* ---------- Banner del asistente ---------- */
+.banner-ia {
+    margin: 70px;
+    padding: 40px;
+    border: 1px solid var(--oro);
+    background: linear-gradient(90deg, rgba(209, 162, 60, 0.12), transparent);
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.banner-ia > i {
+    font-size: 46px;
+    color: var(--oro);
+}
+
+.banner-ia div {
+    flex-grow: 1;
+}
+
+.banner-ia h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    margin: 0 0 8px;
+}
+
+.banner-ia p {
+    color: var(--gris);
+    margin: 0;
+}
+
 /* ---------- Catálogo ---------- */
 #vista-catalogo,
 #vista-contacto {
@@ -873,6 +904,221 @@ h1 span {
     font-weight: 600;
     margin-bottom: 15px;
 }
+
+/* ---------- Chat con el asistente ---------- */
+.chat-burbuja {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    border: none;
+    background: var(--oro);
+    color: var(--negro);
+    font-size: 26px;
+    cursor: pointer;
+    box-shadow: 0 6px 25px rgba(209, 162, 60, 0.45);
+    z-index: 80;
+    transition: transform 0.2s;
+}
+
+.chat-burbuja:hover {
+    transform: scale(1.08);
+}
+
+.chat {
+    position: fixed;
+    bottom: 100px;
+    right: 25px;
+    width: 370px;
+    height: 540px;
+    max-height: calc(100vh - 130px);
+    background: var(--panel);
+    border: 1px solid var(--oro);
+    display: flex;
+    flex-direction: column;
+    z-index: 85;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.chat.abierto {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.chat-header {
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 15px 18px;
+    background: var(--panel-2);
+}
+
+.chat-header .cerrar {
+    margin-left: auto;
+}
+
+.chat-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--oro);
+    color: var(--negro);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.chat-header h4 {
+    margin: 0;
+    font-size: 15px;
+}
+
+.chat-header span {
+    font-size: 12px;
+    color: var(--gris);
+}
+
+.chat-header span i {
+    color: #3ecf6e;
+    font-size: 8px;
+}
+
+.chat-mensajes {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.msg {
+    max-width: 85%;
+    padding: 11px 15px;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-line;
+}
+
+.msg.bot {
+    background: var(--panel-2);
+    border: 1px solid var(--borde);
+    align-self: flex-start;
+}
+
+.msg.usuario {
+    background: var(--oro);
+    color: var(--negro);
+    align-self: flex-end;
+}
+
+.escribiendo span {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin: 0 2px;
+    border-radius: 50%;
+    background: var(--gris);
+    animation: puntos 1s infinite;
+}
+
+.escribiendo span:nth-child(2) { animation-delay: 0.2s; }
+.escribiendo span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes puntos {
+    0%, 100% { opacity: 0.3; }
+    50%      { opacity: 1; }
+}
+
+.chat-producto {
+    background: var(--negro);
+    border: 1px solid var(--borde);
+    padding: 10px 12px;
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    white-space: normal;
+}
+
+.chat-producto strong {
+    display: block;
+    font-size: 13px;
+}
+
+.chat-producto small {
+    color: var(--oro);
+}
+
+.chat-producto button {
+    background: var(--oro);
+    border: none;
+    color: var(--negro);
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.chat-sugerencias {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0 18px 10px;
+}
+
+.chat-sugerencias button {
+    background: transparent;
+    border: 1px solid var(--oro);
+    color: var(--oro);
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.chat-sugerencias button:hover {
+    background: var(--oro);
+    color: var(--negro);
+}
+
+.chat-form {
+    display: flex;
+    border-top: 1px solid var(--borde);
+}
+
+.chat-form input {
+    flex-grow: 1;
+    background: var(--negro);
+    border: none;
+    color: white;
+    padding: 15px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+}
+
+.chat-form input:focus {
+    outline: none;
+}
+
+.chat-form button {
+    background: var(--oro);
+    border: none;
+    color: var(--negro);
+    width: 55px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+a.info-item:hover { border-color: var(--oro); }
+.info-flecha { margin-left: auto; color: var(--gris); font-size: 13px; }
 
 /* ---------- Buscador y orden del catálogo ---------- */
 .herramientas {
