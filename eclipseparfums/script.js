@@ -347,6 +347,253 @@ function mostrarToast(texto) {
     }, 2500);
 }
 
+/* ---------- 5. PAGO (CHECKOUT) ----------
+   IMPORTANTE: esto es una DEMOSTRACIÓN. No se cobra dinero y los datos
+   de la tarjeta no se guardan ni se envían a ningún lado. */
+const modalPago = document.getElementById("modalPago");
+let metodoPago = "credito";
+
+function costoEnvio(subtotal) {
+    return subtotal >= 100 ? 0 : 5;
+}
+
+function totalPedido() {
+    const subtotal = calcularSubtotal();
+    return subtotal + costoEnvio(subtotal);
+}
+
+function mostrarPaso(id, numeroPaso) {
+    document.querySelectorAll(".paso-contenido").forEach(function (p) {
+        p.classList.remove("activo");
+    });
+    document.getElementById(id).classList.add("activo");
+
+    document.querySelectorAll(".paso").forEach(function (p) {
+        const n = Number(p.dataset.paso);
+        p.classList.toggle("activo", n === numeroPaso);
+        p.classList.toggle("hecho", n < numeroPaso);
+    });
+}
+
+function llenarResumen() {
+    const contenedor = document.getElementById("resumenItems");
+    contenedor.innerHTML = "";
+    carrito.forEach(function (item) {
+        const p = buscarPorId(item.id);
+        const fila = document.createElement("div");
+        fila.className = "resumen-item";
+        fila.innerHTML =
+            '<img class="mini-foto" src="' + rutaFoto(p) + '" alt="" onerror="this.style.visibility=\'hidden\'">' +
+            "<div>" + p.nombre + "<small>" + p.marca + " · x" + item.cantidad + "</small></div>" +
+            "<span>" + formatoPrecio(p.precio * item.cantidad) + "</span>";
+        contenedor.appendChild(fila);
+    });
+
+    const subtotal = calcularSubtotal();
+    const envio = costoEnvio(subtotal);
+    document.getElementById("resSubtotal").textContent = formatoPrecio(subtotal);
+    document.getElementById("resEnvio").textContent = envio === 0 ? "Gratis" : formatoPrecio(envio);
+    document.getElementById("resTotal").textContent = formatoPrecio(subtotal + envio);
+    document.querySelectorAll(".monto-pagar").forEach(function (s) {
+        s.textContent = formatoPrecio(subtotal + envio);
+    });
+}
+
+function abrirPago() {
+    if (carrito.length === 0) {
+        mostrarToast("Agrega un perfume antes de finalizar");
+        return;
+    }
+    cerrarCarrito();
+    llenarResumen();
+    mostrarPaso("paso1", 1);
+    modalPago.classList.add("abierto");
+}
+
+function cerrarPago() {
+    modalPago.classList.remove("abierto");
+}
+
+document.getElementById("finalizarCompra").addEventListener("click", abrirPago);
+document.getElementById("cerrarPago").addEventListener("click", cerrarPago);
+
+/* Mostrar u ocultar un error debajo de un campo */
+function marcarError(input, mensaje) {
+    const small = input.parentNode.querySelector(".error");
+    input.classList.toggle("invalido", mensaje !== "");
+    if (small) small.textContent = mensaje;
+    return mensaje === "";
+}
+
+/* PASO 1: datos de envío */
+document.getElementById("paso1").addEventListener("submit", function (evento) {
+    evento.preventDefault();
+    const nombre = document.getElementById("envNombre");
+    const telefono = document.getElementById("envTelefono");
+    const correo = document.getElementById("envCorreo");
+    const ciudad = document.getElementById("envCiudad");
+    const direccion = document.getElementById("envDireccion");
+
+    let ok = true;
+    ok = marcarError(nombre, nombre.value.trim().length < 3 ? "Escribe tu nombre completo." : "") && ok;
+    ok = marcarError(telefono, /^0\d{9}$/.test(telefono.value.replace(/\s/g, "")) ? "" : "Escribe un celular válido (10 dígitos, empieza con 0).") && ok;
+    ok = marcarError(correo, /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.value.trim()) ? "" : "Escribe un correo válido.") && ok;
+    ok = marcarError(ciudad, ciudad.value.trim().length < 3 ? "Escribe tu ciudad." : "") && ok;
+    ok = marcarError(direccion, direccion.value.trim().length < 5 ? "Escribe tu dirección." : "") && ok;
+
+    if (ok) mostrarPaso("paso2", 2);
+});
+
+document.getElementById("volverPaso1").addEventListener("click", function () {
+    mostrarPaso("paso1", 1);
+});
+
+/* Elegir método de pago */
+document.querySelectorAll(".metodo").forEach(function (boton) {
+    boton.addEventListener("click", function () {
+        metodoPago = boton.dataset.metodo;
+        document.querySelectorAll(".metodo").forEach(function (b) {
+            b.classList.toggle("activo", b === boton);
+        });
+
+        const esPaypal = metodoPago === "paypal";
+        document.getElementById("formTarjeta").classList.toggle("oculto", esPaypal);
+        document.getElementById("formPaypal").classList.toggle("oculto", !esPaypal);
+        document.getElementById("tarjetaTipoTexto").textContent = metodoPago === "debito" ? "DÉBITO" : "CRÉDITO";
+        // Las cuotas solo existen con tarjeta de crédito
+        document.getElementById("campoCuotas").classList.toggle("oculto", metodoPago !== "credito");
+    });
+});
+
+/* Detectar la marca de la tarjeta por sus primeros números */
+function marcaTarjeta(numero) {
+    if (/^4/.test(numero)) return "visa";
+    if (/^(5[1-5]|2[2-7])/.test(numero)) return "mastercard";
+    if (/^3[47]/.test(numero)) return "amex";
+    if (/^3(0|6|8)/.test(numero)) return "diners";
+    return "";
+}
+
+/* Algoritmo de Luhn: comprueba si un número de tarjeta es válido */
+function luhnValido(numero) {
+    let suma = 0;
+    let doble = false;
+    for (let i = numero.length - 1; i >= 0; i--) {
+        let d = Number(numero[i]);
+        if (doble) {
+            d = d * 2;
+            if (d > 9) d = d - 9;
+        }
+        suma += d;
+        doble = !doble;
+    }
+    return numero.length >= 13 && suma % 10 === 0;
+}
+
+const iconosMarca = {
+    visa: '<i class="fa-brands fa-cc-visa"></i>',
+    mastercard: '<i class="fa-brands fa-cc-mastercard"></i>',
+    amex: '<i class="fa-brands fa-cc-amex"></i>',
+    diners: '<i class="fa-brands fa-cc-diners-club"></i>',
+    "": '<i class="fa-regular fa-credit-card"></i>'
+};
+
+/* La tarjeta de la vista previa se actualiza mientras escribes */
+document.getElementById("tarNumero").addEventListener("input", function () {
+    const limpio = this.value.replace(/\D/g, "").slice(0, 16);
+    this.value = limpio.replace(/(\d{4})(?=\d)/g, "$1 ");
+    const relleno = (limpio + "################").slice(0, 16).replace(/#/g, "•");
+    document.getElementById("vistaNumero").textContent = relleno.replace(/(.{4})(?=.)/g, "$1 ");
+    document.getElementById("tarjetaMarca").innerHTML = iconosMarca[marcaTarjeta(limpio)];
+});
+
+document.getElementById("tarNombre").addEventListener("input", function () {
+    document.getElementById("vistaNombre").textContent = this.value.toUpperCase() || "NOMBRE APELLIDO";
+});
+
+document.getElementById("tarFecha").addEventListener("input", function () {
+    let v = this.value.replace(/\D/g, "").slice(0, 4);
+    if (v.length >= 3) v = v.slice(0, 2) + "/" + v.slice(2);
+    this.value = v;
+    document.getElementById("vistaFecha").textContent = v || "MM/AA";
+});
+
+document.getElementById("tarCvv").addEventListener("input", function () {
+    this.value = this.value.replace(/\D/g, "");
+});
+
+function fechaValida(texto) {
+    const partes = texto.split("/");
+    if (partes.length !== 2) return false;
+    const mes = Number(partes[0]);
+    const anio = 2000 + Number(partes[1]);
+    if (mes < 1 || mes > 12) return false;
+    const hoy = new Date();
+    return anio > hoy.getFullYear() || (anio === hoy.getFullYear() && mes >= hoy.getMonth() + 1);
+}
+
+/* Pagar con tarjeta */
+document.getElementById("formTarjeta").addEventListener("submit", function (evento) {
+    evento.preventDefault();
+    const numero = document.getElementById("tarNumero");
+    const nombre = document.getElementById("tarNombre");
+    const fecha = document.getElementById("tarFecha");
+    const cvv = document.getElementById("tarCvv");
+    const limpio = numero.value.replace(/\D/g, "");
+
+    let ok = true;
+    ok = marcarError(numero, luhnValido(limpio) ? "" : "El número de tarjeta no es válido.") && ok;
+    ok = marcarError(nombre, nombre.value.trim().length < 3 ? "Escribe el nombre del titular." : "") && ok;
+    ok = marcarError(fecha, fechaValida(fecha.value) ? "" : "Fecha inválida o vencida.") && ok;
+    ok = marcarError(cvv, /^\d{3,4}$/.test(cvv.value) ? "" : "CVV inválido.") && ok;
+
+    if (ok) {
+        const tipo = metodoPago === "debito" ? "tarjeta de débito" : "tarjeta de crédito";
+        procesarPago(tipo + " terminada en " + limpio.slice(-4));
+    }
+});
+
+/* Pagar con PayPal */
+document.getElementById("formPaypal").addEventListener("submit", function (evento) {
+    evento.preventDefault();
+    const correo = document.getElementById("paypalCorreo");
+    const ok = marcarError(correo, /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.value.trim()) ? "" : "Escribe el correo de tu cuenta PayPal.");
+    if (ok) procesarPago("PayPal (" + correo.value.trim() + ")");
+});
+
+/* Simula el procesamiento y muestra la confirmación */
+function procesarPago(descripcionMetodo) {
+    const total = totalPedido();
+    const pedido = "EP-" + Math.floor(100000 + Math.random() * 900000);
+    const nombre = document.getElementById("envNombre").value.trim().split(" ")[0];
+    const ciudad = document.getElementById("envCiudad").value.trim();
+
+    mostrarPaso("pasoProcesando", 2);
+
+    setTimeout(function () {
+        document.getElementById("confirmacionTexto").innerHTML =
+            "Gracias, <strong>" + nombre.replace(/</g, "") + "</strong>. Tu pedido <strong>" + pedido + "</strong> por <strong>" +
+            formatoPrecio(total) + "</strong> fue pagado con " + descripcionMetodo.replace(/</g, "") + ".<br>" +
+            "Lo enviaremos a " + ciudad.replace(/</g, "") + " en 24 a 72 horas. Te escribiremos por WhatsApp para coordinar la entrega.";
+        mostrarPaso("paso3", 3);
+
+        // Vaciar carrito y limpiar los datos de la tarjeta
+        carrito = [];
+        actualizarCarrito();
+        document.getElementById("formTarjeta").reset();
+        document.getElementById("formPaypal").reset();
+        document.getElementById("vistaNumero").textContent = "•••• •••• •••• ••••";
+        document.getElementById("vistaNombre").textContent = "NOMBRE APELLIDO";
+        document.getElementById("vistaFecha").textContent = "MM/AA";
+        document.getElementById("tarjetaMarca").innerHTML = iconosMarca[""];
+    }, 2000);
+}
+
+document.getElementById("terminarCompra").addEventListener("click", function () {
+    cerrarPago();
+    mostrarVista("inicio");
+});
+
 /* ---------- 6. FORMULARIO DE CONTACTO ---------- */
 document.getElementById("formContacto").addEventListener("submit", function (evento) {
     evento.preventDefault();

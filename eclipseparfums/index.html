@@ -241,6 +241,125 @@
         </div>
     </aside>
 
+    <!-- ===================== PAGO (CHECKOUT) ===================== -->
+    <div class="modal" id="modalPago">
+        <div class="modal-caja">
+            <button class="cerrar modal-cerrar" id="cerrarPago" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+
+            <!-- Pasos -->
+            <div class="pasos">
+                <span class="paso activo" data-paso="1">1. Envío</span>
+                <span class="paso" data-paso="2">2. Pago</span>
+                <span class="paso" data-paso="3">3. Confirmación</span>
+            </div>
+
+            <div class="checkout">
+                <!-- Columna izquierda: formularios -->
+                <div class="checkout-form">
+
+                    <!-- PASO 1: datos de envío -->
+                    <form class="paso-contenido activo" id="paso1" novalidate>
+                        <h3>Datos de envío</h3>
+                        <div class="fila">
+                            <div class="campo"><label>Nombre completo</label><input id="envNombre" placeholder="Ej: Matías Pérez"><small class="error"></small></div>
+                            <div class="campo"><label>Teléfono</label><input id="envTelefono" placeholder="09XXXXXXXX" inputmode="numeric"><small class="error"></small></div>
+                        </div>
+                        <div class="campo"><label>Correo electrónico</label><input id="envCorreo" type="email" placeholder="tucorreo@ejemplo.com"><small class="error"></small></div>
+                        <div class="fila">
+                            <div class="campo"><label>Ciudad</label><input id="envCiudad" placeholder="Ej: Guayaquil"><small class="error"></small></div>
+                            <div class="campo"><label>Dirección</label><input id="envDireccion" placeholder="Calle, número, referencia"><small class="error"></small></div>
+                        </div>
+                        <button type="submit" class="btn-dorado lleno ancho">Continuar al pago <i class="fa-solid fa-arrow-right"></i></button>
+                    </form>
+
+                    <!-- PASO 2: método de pago -->
+                    <div class="paso-contenido" id="paso2">
+                        <h3>Método de pago</h3>
+                        <div class="metodos">
+                            <button type="button" class="metodo activo" data-metodo="credito"><i class="fa-regular fa-credit-card"></i> Tarjeta de crédito</button>
+                            <button type="button" class="metodo" data-metodo="debito"><i class="fa-solid fa-credit-card"></i> Tarjeta de débito</button>
+                            <button type="button" class="metodo" data-metodo="paypal"><i class="fa-brands fa-paypal"></i> PayPal</button>
+                        </div>
+
+                        <!-- Formulario de tarjeta (crédito o débito) -->
+                        <form id="formTarjeta" novalidate>
+                            <div class="tarjeta-vista" id="tarjetaVista">
+                                <div class="tarjeta-top">
+                                    <span class="tarjeta-tipo" id="tarjetaTipoTexto">CRÉDITO</span>
+                                    <span class="tarjeta-marca" id="tarjetaMarca"><i class="fa-regular fa-credit-card"></i></span>
+                                </div>
+                                <div class="tarjeta-chip"></div>
+                                <div class="tarjeta-numero" id="vistaNumero">•••• •••• •••• ••••</div>
+                                <div class="tarjeta-bottom">
+                                    <div><small>TITULAR</small><span id="vistaNombre">NOMBRE APELLIDO</span></div>
+                                    <div><small>VENCE</small><span id="vistaFecha">MM/AA</span></div>
+                                </div>
+                            </div>
+
+                            <div class="campo"><label>Número de tarjeta</label><input id="tarNumero" placeholder="1234 5678 9012 3456" inputmode="numeric" maxlength="19" autocomplete="off"><small class="error"></small></div>
+                            <div class="campo"><label>Nombre del titular</label><input id="tarNombre" placeholder="Como aparece en la tarjeta" autocomplete="off"><small class="error"></small></div>
+                            <div class="fila">
+                                <div class="campo"><label>Vencimiento</label><input id="tarFecha" placeholder="MM/AA" maxlength="5" inputmode="numeric" autocomplete="off"><small class="error"></small></div>
+                                <div class="campo"><label>CVV</label><input id="tarCvv" placeholder="123" maxlength="4" inputmode="numeric" type="password" autocomplete="off"><small class="error"></small></div>
+                            </div>
+                            <div class="campo" id="campoCuotas">
+                                <label>Cuotas</label>
+                                <select id="tarCuotas">
+                                    <option value="1">Pago corriente (1 cuota)</option>
+                                    <option value="3">3 meses sin intereses</option>
+                                    <option value="6">6 meses sin intereses</option>
+                                    <option value="12">12 meses con intereses</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn-dorado lleno ancho" id="btnPagarTarjeta"><i class="fa-solid fa-lock"></i> Pagar <span class="monto-pagar"></span></button>
+                        </form>
+
+                        <!-- PayPal -->
+                        <form id="formPaypal" class="oculto" novalidate>
+                            <div class="paypal-caja">
+                                <i class="fa-brands fa-paypal"></i>
+                                <p>Serás dirigido a PayPal para iniciar sesión y completar tu pago de forma segura.</p>
+                            </div>
+                            <div class="campo"><label>Correo de tu cuenta PayPal</label><input id="paypalCorreo" type="email" placeholder="tucorreo@ejemplo.com"><small class="error"></small></div>
+                            <button type="submit" class="btn-paypal ancho"><i class="fa-brands fa-paypal"></i> Pagar con PayPal <span class="monto-pagar"></span></button>
+                        </form>
+
+                        <button type="button" class="volver" id="volverPaso1"><i class="fa-solid fa-arrow-left"></i> Volver a datos de envío</button>
+                        <p class="aviso-demo"><i class="fa-solid fa-shield-halved"></i> Modo demostración: no se realizan cobros reales y los datos de la tarjeta no se guardan ni se envían.</p>
+                    </div>
+
+                    <!-- Procesando -->
+                    <div class="paso-contenido" id="pasoProcesando">
+                        <div class="procesando">
+                            <div class="spinner"></div>
+                            <p>Procesando tu pago...</p>
+                        </div>
+                    </div>
+
+                    <!-- PASO 3: confirmación -->
+                    <div class="paso-contenido" id="paso3">
+                        <div class="confirmacion">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <h3>¡Pago aprobado!</h3>
+                            <p id="confirmacionTexto"></p>
+                            <button type="button" class="btn-dorado lleno" id="terminarCompra">Seguir comprando</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna derecha: resumen del pedido -->
+                <aside class="resumen">
+                    <h4>Resumen del pedido</h4>
+                    <div id="resumenItems"></div>
+                    <div class="resumen-linea"><span>Subtotal</span><span id="resSubtotal">$0.00</span></div>
+                    <div class="resumen-linea"><span>Envío</span><span id="resEnvio">$0.00</span></div>
+                    <div class="resumen-linea total"><span>Total</span><span id="resTotal">$0.00</span></div>
+                    <p class="resumen-nota">Envío gratis en compras desde $100.</p>
+                </aside>
+            </div>
+        </div>
+    </div>
+
     <!-- Aviso pequeño (toast) -->
     <div class="toast" id="toast"></div>
 
