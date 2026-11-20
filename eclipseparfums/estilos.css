@@ -576,6 +576,104 @@ h1 span {
     grid-column: 1 / -1;
 }
 
+/* ---------- Contacto ---------- */
+.contacto {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap: 40px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.contacto-info {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.info-item {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    background: var(--panel);
+    border: 1px solid var(--borde);
+    padding: 18px 22px;
+}
+
+.info-item i {
+    color: var(--oro);
+    font-size: 22px;
+    width: 26px;
+    text-align: center;
+}
+
+.info-item h4 {
+    margin: 0 0 4px;
+    font-size: 15px;
+}
+
+.info-item p {
+    margin: 0;
+    color: var(--gris);
+    font-size: 14px;
+}
+
+.info-ia {
+    border: 1px dashed var(--oro);
+    padding: 20px;
+    text-align: center;
+}
+
+.info-ia p {
+    margin: 0 0 15px;
+    color: var(--gris);
+}
+
+.contacto-form {
+    background: var(--panel);
+    border: 1px solid var(--borde);
+    padding: 35px;
+    display: flex;
+    flex-direction: column;
+}
+
+.contacto-form label {
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.contacto-form input,
+.contacto-form textarea {
+    background: var(--negro);
+    border: 1px solid var(--borde);
+    color: white;
+    padding: 14px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.contacto-form input:focus,
+.contacto-form textarea:focus {
+    outline: none;
+    border-color: var(--oro);
+}
+
+.error {
+    color: #e05a6a;
+    font-size: 12px;
+    min-height: 18px;
+    margin: 4px 0 10px;
+}
+
+.exito {
+    color: var(--oro);
+    text-align: center;
+    margin: 15px 0 0;
+}
+
 /* ---------- Pie de página ---------- */
 .footer {
     border-top: 1px solid #1c1c1c;

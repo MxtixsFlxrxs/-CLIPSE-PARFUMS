@@ -347,6 +347,40 @@ function mostrarToast(texto) {
     }, 2500);
 }
 
+/* ---------- 6. FORMULARIO DE CONTACTO ---------- */
+document.getElementById("formContacto").addEventListener("submit", function (evento) {
+    evento.preventDefault();
+
+    const nombre = document.getElementById("nombre").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const mensaje = document.getElementById("mensaje").value.trim();
+    let valido = true;
+
+    document.getElementById("errorNombre").textContent = "";
+    document.getElementById("errorEmail").textContent = "";
+    document.getElementById("errorMensaje").textContent = "";
+    document.getElementById("exitoContacto").textContent = "";
+
+    if (nombre.length < 2) {
+        document.getElementById("errorNombre").textContent = "Escribe tu nombre.";
+        valido = false;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        document.getElementById("errorEmail").textContent = "Escribe un correo válido.";
+        valido = false;
+    }
+    if (mensaje.length < 10) {
+        document.getElementById("errorMensaje").textContent = "El mensaje debe tener al menos 10 caracteres.";
+        valido = false;
+    }
+
+    if (valido) {
+        document.getElementById("exitoContacto").textContent =
+            "¡Gracias, " + nombre + "! Recibimos tu mensaje y te responderemos pronto.";
+        this.reset();
+    }
+});
+
 /* ---------- INICIO: cuando carga la página ---------- */
 mostrarDestacados();
 actualizarCarrito();
