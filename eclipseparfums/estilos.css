@@ -297,3 +297,398 @@ h1 span {
     line-height: 1.6;
     margin: 0;
 }
+
+/* ---------- Secciones generales ---------- */
+.seccion {
+    padding: 70px 70px 20px;
+}
+
+.titulo-seccion {
+    font-family: 'Playfair Display', serif;
+    font-size: 40px;
+    text-align: center;
+    margin: 0 0 40px;
+}
+
+/* Tarjetas de colección Hombre / Mujer */
+.colecciones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.coleccion-card {
+    height: 280px;
+    border: 1px solid var(--borde);
+    cursor: pointer;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-start;
+    padding: 35px;
+    text-align: left;
+    transition: border-color 0.3s, transform 0.3s;
+}
+
+.coleccion-card.hombre {
+    background: radial-gradient(circle at 80% 30%, rgba(209, 162, 60, 0.35), transparent 55%),
+                linear-gradient(135deg, #1b1b1b, #0a0a0a);
+}
+
+.coleccion-card.mujer {
+    background: radial-gradient(circle at 80% 30%, rgba(201, 138, 160, 0.35), transparent 55%),
+                linear-gradient(135deg, #1b1b1b, #0a0a0a);
+}
+
+.coleccion-card:hover {
+    border-color: var(--oro);
+    transform: translateY(-4px);
+}
+
+.coleccion-etiqueta {
+    color: var(--oro);
+    letter-spacing: 4px;
+    font-size: 13px;
+}
+
+.coleccion-nombre {
+    font-family: 'Playfair Display', serif;
+    font-size: 44px;
+    margin: 8px 0 14px;
+}
+
+.coleccion-link {
+    font-size: 14px;
+    color: var(--gris);
+}
+
+.coleccion-card:hover .coleccion-link {
+    color: var(--oro);
+}
+
+/* ---------- Productos ---------- */
+.grid-productos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 25px;
+}
+
+.producto {
+    background: var(--panel);
+    border: 1px solid var(--borde);
+    padding: 25px 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: border-color 0.3s, transform 0.3s;
+}
+
+.producto:hover {
+    border-color: var(--oro);
+    transform: translateY(-4px);
+}
+
+.producto-imagen {
+    height: 230px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    margin: -25px -20px 20px;
+    overflow: hidden;
+}
+
+.producto-imagen img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.4s;
+}
+
+.producto:hover .producto-imagen img {
+    transform: scale(1.06);
+}
+
+/* Si la foto no existe, se muestra el frasco dibujado con CSS */
+.producto-imagen .frasco { display: none; }
+.producto-imagen.sin-foto { background: radial-gradient(circle, #222 0%, var(--panel) 70%); }
+.producto-imagen.sin-foto img { display: none; }
+.producto-imagen.sin-foto .frasco { display: flex; }
+
+/* Frasco de perfume dibujado con CSS */
+.frasco {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.frasco-tapa {
+    width: 34px;
+    height: 26px;
+    background: linear-gradient(180deg, #2a2a2a, #0d0d0d);
+    border: 1px solid var(--oro);
+}
+
+.frasco-cuello {
+    width: 16px;
+    height: 8px;
+    background: var(--oro);
+}
+
+.frasco-cuerpo {
+    width: 92px;
+    height: 110px;
+    border-radius: 10px;
+    border: 1px solid rgba(209, 162, 60, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 18px;
+    letter-spacing: 2px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+.etiqueta {
+    position: absolute;
+    z-index: 2;
+    top: 15px;
+    left: 15px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    padding: 5px 10px;
+    background: var(--oro);
+    color: var(--negro);
+}
+
+.etiqueta.oferta { background: #b23a48; color: white; }
+.etiqueta.nuevo  { background: white; color: var(--negro); }
+
+.producto-marca {
+    color: var(--oro);
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 0 0 6px;
+}
+
+.producto-nombre {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    margin: 0 0 8px;
+}
+
+.producto-notas {
+    color: var(--gris);
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0 0 15px;
+    flex-grow: 1;
+}
+
+.producto-precio {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.precio {
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.precio-antes {
+    color: #777;
+    text-decoration: line-through;
+    font-size: 15px;
+}
+
+.btn-agregar {
+    background: transparent;
+    border: 1px solid var(--oro);
+    color: var(--oro);
+    padding: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.btn-agregar:hover {
+    background: var(--oro);
+    color: var(--negro);
+}
+
+/* ---------- Catálogo ---------- */
+#vista-catalogo,
+#vista-contacto {
+    padding: 60px 70px 80px;
+    min-height: calc(100vh - 88px);
+}
+
+.catalogo-header .titulo-seccion {
+    margin-bottom: 10px;
+}
+
+.catalogo-sub {
+    text-align: center;
+    color: var(--gris);
+    margin: 0 0 35px;
+}
+
+.filtros {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 40px;
+}
+
+.filtro {
+    background: transparent;
+    border: 1px solid var(--borde);
+    color: white;
+    padding: 10px 22px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filtro:hover {
+    border-color: var(--oro);
+}
+
+.filtro.activo {
+    background: var(--oro);
+    border-color: var(--oro);
+    color: var(--negro);
+    font-weight: 600;
+}
+
+.sin-resultados {
+    text-align: center;
+    color: var(--gris);
+    grid-column: 1 / -1;
+}
+
+/* ---------- Pie de página ---------- */
+.footer {
+    border-top: 1px solid #1c1c1c;
+    padding: 50px 20px 30px;
+    text-align: center;
+    background: #050505;
+}
+
+.footer-logo {
+    width: 60px;
+}
+
+.footer-marca {
+    color: var(--oro);
+    letter-spacing: 5px;
+    margin: 10px 0 25px;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+}
+
+.footer-links button {
+    background: none;
+    border: none;
+    color: var(--gris);
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.footer-links button:hover {
+    color: var(--oro);
+}
+
+.redes {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.redes a {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--borde);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.redes a:hover {
+    border-color: var(--oro);
+    color: var(--oro);
+}
+
+.copy {
+    color: #666;
+    font-size: 13px;
+    margin: 0;
+}
+
+/* ---------- Buscador y orden del catálogo ---------- */
+.herramientas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.buscador {
+    flex-grow: 1;
+    min-width: 220px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--panel);
+    border: 1px solid var(--borde);
+    padding: 0 15px;
+}
+
+.buscador i { color: var(--oro); }
+
+.buscador input,
+.herramientas select,
+.campo select {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 13px 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    width: 100%;
+}
+
+.buscador input:focus { outline: none; }
+
+.herramientas select,
+.campo select {
+    background: var(--panel);
+    border: 1px solid var(--borde);
+    padding: 13px;
+    width: auto;
+    cursor: pointer;
+}
+
+.campo select { width: 100%; background: var(--negro); }
+
+.contador-productos { color: var(--gris); font-size: 14px; }

@@ -97,9 +97,83 @@
                 </div>
             </div>
 
+            <div class="seccion">
+                <p class="brand-name centrado">NUESTRAS COLECCIONES</p>
+                <h2 class="titulo-seccion">Encuentra tu fragancia</h2>
+                <div class="colecciones">
+                    <button class="coleccion-card hombre" data-vista="hombre">
+                        <span class="coleccion-etiqueta">COLECCIÓN</span>
+                        <span class="coleccion-nombre">HOMBRE</span>
+                        <span class="coleccion-link">Ver perfumes <i class="fa-solid fa-arrow-right"></i></span>
+                    </button>
+                    <button class="coleccion-card mujer" data-vista="mujer">
+                        <span class="coleccion-etiqueta">COLECCIÓN</span>
+                        <span class="coleccion-nombre">MUJER</span>
+                        <span class="coleccion-link">Ver perfumes <i class="fa-solid fa-arrow-right"></i></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="seccion">
+                <p class="brand-name centrado">FAVORITOS DE NUESTROS CLIENTES</p>
+                <h2 class="titulo-seccion">Los más vendidos</h2>
+                <div class="grid-productos" id="gridDestacados"></div>
+            </div>
+
+        </section>
+
+        <!-- ===================== VISTA: CATÁLOGO (hombre / mujer) ===================== -->
+        <section class="vista" id="vista-catalogo">
+            <div class="catalogo-header">
+                <p class="brand-name centrado">ÉCLIPSE PARFUMS</p>
+                <h2 class="titulo-seccion" id="catalogoTitulo">Perfumes para hombre</h2>
+                <p class="catalogo-sub">Fragancias originales seleccionadas para ti.</p>
+            </div>
+
+            <div class="filtros" id="filtros">
+                <button class="filtro activo" data-filtro="todos">Todos</button>
+                <button class="filtro" data-filtro="masvendido">Más vendidos</button>
+                <button class="filtro" data-filtro="nuevo">Nuevos</button>
+                <button class="filtro" data-filtro="oferta">Ofertas</button>
+            </div>
+
+            <div class="herramientas">
+                <div class="buscador">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="buscador" placeholder="Buscar perfume o marca...">
+                </div>
+                <select id="ordenar">
+                    <option value="relevancia">Ordenar: destacados</option>
+                    <option value="menor">Precio: menor a mayor</option>
+                    <option value="mayor">Precio: mayor a menor</option>
+                    <option value="nombre">Nombre: A - Z</option>
+                </select>
+                <span class="contador-productos" id="contadorProductos"></span>
+            </div>
+
+            <div class="grid-productos" id="gridCatalogo"></div>
         </section>
 
     </main>
+
+    <!-- ===================== PIE DE PÁGINA ===================== -->
+    <footer class="footer">
+        <img src="img/logo.png" alt="ÉCLIPSE PARFUMS" class="footer-logo">
+        <p class="footer-marca">ÉCLIPSE PARFUMS</p>
+        <div class="footer-links">
+            <button data-vista="inicio">Inicio</button>
+            <button data-vista="hombre">Hombre</button>
+            <button data-vista="mujer">Mujer</button>
+            <button data-vista="contacto">Contactos</button>
+        </div>
+        <div class="redes">
+            <!-- Cuando tengas tus cuentas, cambia los enlaces de Instagram y TikTok por los tuyos -->
+            <a href="https://www.instagram.com/" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://www.tiktok.com/" target="_blank" rel="noopener" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+            <a href="https://wa.me/593996443092" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+        </div>
+        <p class="copy">© 2026 Éclipse Parfums · Proyecto Jóvenes Creativos</p>
+    </footer>
 
     <script src="script.js"></script>
 </body>
