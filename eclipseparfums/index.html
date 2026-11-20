@@ -175,6 +175,23 @@
         <p class="copy">© 2026 Éclipse Parfums · Proyecto Jóvenes Creativos</p>
     </footer>
 
+    <!-- ===================== CARRITO ===================== -->
+    <div class="overlay" id="overlay"></div>
+    <aside class="carrito" id="carrito">
+        <div class="carrito-header">
+            <h3>Tu carrito</h3>
+            <button class="cerrar" id="cerrarCarrito" aria-label="Cerrar carrito"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="carrito-items" id="carritoItems"></div>
+        <div class="carrito-footer">
+            <div class="carrito-total"><span>Total</span><span id="carritoTotal">$0.00</span></div>
+            <button class="btn-dorado lleno" id="finalizarCompra">Finalizar compra</button>
+        </div>
+    </aside>
+
+    <!-- Aviso pequeño (toast) -->
+    <div class="toast" id="toast"></div>
+
     <script src="script.js"></script>
 </body>
 </html>

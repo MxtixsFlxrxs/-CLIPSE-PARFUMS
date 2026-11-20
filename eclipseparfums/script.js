@@ -232,5 +232,121 @@ function mostrarDestacados() {
     });
 }
 
+/* ---------- 4. CARRITO DE COMPRAS ---------- */
+let carrito = [];
+
+try {
+    carrito = JSON.parse(localStorage.getItem("carritoEclipse")) || [];
+    carrito = carrito.filter(function (i) { return buscarPorId(i.id); });
+} catch (e) {
+    carrito = [];
+}
+
+function guardarCarrito() {
+    try {
+        localStorage.setItem("carritoEclipse", JSON.stringify(carrito));
+    } catch (e) {
+        // Si el navegador no permite guardar, no pasa nada
+    }
+}
+
+function agregarAlCarrito(id) {
+    const item = carrito.find(function (i) { return i.id === id; });
+    if (item) {
+        item.cantidad++;
+    } else {
+        carrito.push({ id: id, cantidad: 1 });
+    }
+    mostrarToast(buscarPorId(id).nombre + " se agregó al carrito");
+    actualizarCarrito();
+}
+
+function cambiarCantidad(id, cambio) {
+    const item = carrito.find(function (i) { return i.id === id; });
+    if (!item) return;
+    item.cantidad += cambio;
+    if (item.cantidad <= 0) {
+        carrito = carrito.filter(function (i) { return i.id !== id; });
+    }
+    actualizarCarrito();
+}
+
+function calcularSubtotal() {
+    return carrito.reduce(function (suma, item) {
+        return suma + buscarPorId(item.id).precio * item.cantidad;
+    }, 0);
+}
+
+function actualizarCarrito() {
+    const contenedor = document.getElementById("carritoItems");
+    let cantidadTotal = 0;
+    contenedor.innerHTML = "";
+
+    if (carrito.length === 0) {
+        contenedor.innerHTML = '<p class="carrito-vacio">Tu carrito está vacío.</p>';
+    }
+
+    carrito.forEach(function (item) {
+        const p = buscarPorId(item.id);
+        cantidadTotal += item.cantidad;
+
+        const fila = document.createElement("div");
+        fila.className = "carrito-item";
+        fila.innerHTML =
+            '<div class="info-item-carrito">' +
+                '<img class="mini-foto" src="' + rutaFoto(p) + '" alt="" onerror="this.style.visibility=\'hidden\'">' +
+                "<div><h4>" + p.nombre + "</h4><p>" + formatoPrecio(p.precio) + "</p></div>" +
+            "</div>" +
+            '<div class="cantidad">' +
+                '<button data-menos="' + p.id + '">−</button>' +
+                "<span>" + item.cantidad + "</span>" +
+                '<button data-mas="' + p.id + '">+</button>' +
+            "</div>";
+        contenedor.appendChild(fila);
+    });
+
+    document.getElementById("carritoTotal").textContent = formatoPrecio(calcularSubtotal());
+    document.getElementById("contadorCarrito").textContent = cantidadTotal;
+    guardarCarrito();
+}
+
+function abrirCarrito() {
+    document.getElementById("carrito").classList.add("abierto");
+    document.getElementById("overlay").classList.add("visible");
+}
+
+function cerrarCarrito() {
+    document.getElementById("carrito").classList.remove("abierto");
+    document.getElementById("overlay").classList.remove("visible");
+}
+
+document.getElementById("abrirCarrito").addEventListener("click", abrirCarrito);
+document.getElementById("cerrarCarrito").addEventListener("click", cerrarCarrito);
+document.getElementById("overlay").addEventListener("click", cerrarCarrito);
+
+/* Botones "agregar", "+" y "−" (funcionan en las tarjetas y en el chat) */
+document.addEventListener("click", function (evento) {
+    const agregar = evento.target.closest("[data-agregar]");
+    const mas = evento.target.closest("[data-mas]");
+    const menos = evento.target.closest("[data-menos]");
+
+    if (agregar) agregarAlCarrito(Number(agregar.dataset.agregar));
+    if (mas) cambiarCantidad(Number(mas.dataset.mas), 1);
+    if (menos) cambiarCantidad(Number(menos.dataset.menos), -1);
+});
+
+/* Aviso pequeño que aparece abajo */
+let temporizadorToast;
+function mostrarToast(texto) {
+    const toast = document.getElementById("toast");
+    toast.textContent = texto;
+    toast.classList.add("visible");
+    clearTimeout(temporizadorToast);
+    temporizadorToast = setTimeout(function () {
+        toast.classList.remove("visible");
+    }, 2500);
+}
+
 /* ---------- INICIO: cuando carga la página ---------- */
 mostrarDestacados();
+actualizarCarrito();
