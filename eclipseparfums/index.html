@@ -1,95 +1,106 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ÉCLIPSE PARFUMS</title>
 
-<html> 
-<head> 
-<title> ECLIPSE PARFUMS</title>
-<link rel="stylesheet" href="estilos.css" >
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- Iconos (Font Awesome) y tipografías (Google Fonts) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Nuestros estilos -->
+    <link rel="stylesheet" href="estilos.css">
 </head>
-<body> 
-    <header>
-        <div class="logo">
+<body>
+
+    <!-- ===================== ENCABEZADO ===================== -->
+    <header class="header">
+        <button class="logo" data-vista="inicio" aria-label="Ir al inicio">
             <img src="img/logo.png" alt="ÉCLIPSE PARFUMS">
-        </div>
-<nav>
-    <button>INICIO</button>
-<div class="menu">
-        <button>HOMBRE</button>
+        </button>
 
-        <div class="submenu">
-            <button>Perfumes</button>
-            <button>Más vendidos</button>
-            <button>Nuevos</button>
-            <button>Ofertas</button>
-        </div>
-    </div>
-    
-    <div class="menu">
-        <button>MUJER</button>
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">
+            <i class="fa-solid fa-bars"></i>
+        </button>
 
-        <div class="submenu">
-            <button>Perfumes</button>
-            <button>Más vendidos</button>
-            <button>Nuevos</button>
-            <button>Ofertas</button>
-        </div>
-    </div>
-   <button>CONTACTOS</button>
-    </nav>
-    <button class="contacto-btn">CONTACTOS</button>
+        <nav class="nav" id="nav">
+            <button class="nav-link activo" data-vista="inicio">INICIO</button>
+
+            <div class="menu">
+                <button class="nav-link" data-vista="hombre">HOMBRE</button>
+                <div class="submenu">
+                    <button data-vista="hombre" data-filtro="todos"><i class="fa-solid fa-spray-can-sparkles"></i> Perfumes</button>
+                    <button data-vista="hombre" data-filtro="masvendido"><i class="fa-regular fa-star"></i> Más vendidos</button>
+                    <button data-vista="hombre" data-filtro="nuevo"><i class="fa-solid fa-wand-sparkles"></i> Nuevos</button>
+                    <button data-vista="hombre" data-filtro="oferta"><i class="fa-solid fa-tag"></i> Ofertas</button>
+                </div>
+            </div>
+
+            <div class="menu">
+                <button class="nav-link" data-vista="mujer">MUJER</button>
+                <div class="submenu">
+                    <button data-vista="mujer" data-filtro="todos"><i class="fa-solid fa-spray-can-sparkles"></i> Perfumes</button>
+                    <button data-vista="mujer" data-filtro="masvendido"><i class="fa-regular fa-star"></i> Más vendidos</button>
+                    <button data-vista="mujer" data-filtro="nuevo"><i class="fa-solid fa-wand-sparkles"></i> Nuevos</button>
+                    <button data-vista="mujer" data-filtro="oferta"><i class="fa-solid fa-tag"></i> Ofertas</button>
+                </div>
+            </div>
+
+            <button class="nav-link" data-vista="contacto">CONTACTOS</button>
+        </nav>
+
+        <button class="carrito-btn" id="abrirCarrito">
+            <i class="fa-solid fa-bag-shopping"></i> CARRITO
+            <span class="contador" id="contadorCarrito">0</span>
+        </button>
     </header>
-    <section class="hero"> 
-    <p class="brand-name">ÉCLIPSE PARFUMS</p>
-    <h1>EL ARTE DE<br>LLEVAR UNA<br><span>ESENCIA</span></h1>
-    <p> Descubre perfumes exclusivos</p>
-    <p> para cada ocasión</p>
-    <button class="coleccion">Descubrir colección <span>></span></button>
-    </section>
-   <section class="beneficios">
-   
 
-    <div class="beneficio">
-        <i class="fa-solid fa-spray-can-sparkles"></i>
-        <h3>PERFUMES EXCLUSIVOS</h3>
-        <p>Fragancias únicas elaboradas</p>
-        <p>con los mejores ingredientes.</p>
-    </div>
+    <main>
 
-    <div class="beneficio">
-        <i class="fa-regular fa-star"></i>
-        <h3>CALIDAD PREMIUM</h3>
-        <p>Seleccionamos solo lo mejor</p>
-        <p>para ti.</p>
-    </div>
+        <!-- ===================== VISTA: INICIO ===================== -->
+        <section class="vista activa" id="vista-inicio">
 
-    <div class="beneficio">
-        <i class="fa-solid fa-wand-sparkles"></i>
-        <h3>SIEMPRE NUEVOS</h3>
-        <p>Descubre nuestras nuevas</p>
-        <p>fragancias.</p>
-    </div>
+            <div class="hero">
+                <div class="hero-contenido">
+                    <p class="brand-name">ÉCLIPSE PARFUMS</p>
+                    <h1>EL ARTE DE<br>LLEVAR UNA<br><span>ESENCIA</span></h1>
+                    <p class="hero-texto">Descubre perfumes exclusivos<br>para cada ocasión</p>
+                    <button class="btn-dorado" data-vista="hombre">
+                        Descubrir colección <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
 
-    <div class="beneficio">
-        <i class="fa-solid fa-tag"></i>
-        <h3>OFERTAS ESPECIALES</h3>
-        <p>Los mejores precios en tus</p>
-        <p>fragancias favoritas.</p>
-    </div>
+            <div class="beneficios">
+                <div class="beneficio">
+                    <i class="fa-solid fa-spray-can-sparkles"></i>
+                    <h3>PERFUMES EXCLUSIVOS</h3>
+                    <p>Fragancias únicas elaboradas<br>con los mejores ingredientes.</p>
+                </div>
+                <div class="beneficio">
+                    <i class="fa-regular fa-star"></i>
+                    <h3>CALIDAD PREMIUM</h3>
+                    <p>Seleccionamos solo lo mejor<br>para ti.</p>
+                </div>
+                <div class="beneficio">
+                    <i class="fa-solid fa-wand-sparkles"></i>
+                    <h3>SIEMPRE NUEVOS</h3>
+                    <p>Descubre nuestras nuevas<br>fragancias.</p>
+                </div>
+                <div class="beneficio">
+                    <i class="fa-solid fa-tag"></i>
+                    <h3>OFERTAS ESPECIALES</h3>
+                    <p>Los mejores precios en tus<br>fragancias favoritas.</p>
+                </div>
+            </div>
 
-</section>
+        </section>
 
+    </main>
 
     <script src="script.js"></script>
 </body>
-
-
-
-
-
-
-
-
 </html>
