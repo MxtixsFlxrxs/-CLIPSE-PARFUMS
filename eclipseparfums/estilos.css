@@ -1431,3 +1431,61 @@ a.info-item:hover { border-color: var(--oro); }
     opacity: 1;
     transform: translate(-50%, 0);
 }
+
+/* =========================================================
+   Celulares y tablets
+   ========================================================= */
+@media (max-width: 1000px) {
+    .header { padding: 0 20px; }
+
+    .menu-toggle { display: block; order: 3; }
+
+    .nav {
+        display: none;
+        position: absolute;
+        top: 88px;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        gap: 0;
+        background: var(--negro);
+        border-bottom: 1px solid var(--borde);
+        padding: 10px 0;
+    }
+
+    .nav.abierto { display: flex; }
+
+    .nav-link { padding: 15px; }
+
+    .menu:hover .submenu { display: none; }
+
+    .carrito-btn { padding: 10px 14px; font-size: 13px; margin-left: auto; margin-right: 15px; }
+
+    .hero {
+        padding: 50px 25px;
+        background-image: linear-gradient(rgba(8, 8, 8, 0.7), rgba(8, 8, 8, 0.7)), url("img/fondo.png");
+    }
+
+    h1 { font-size: 40px; }
+
+    .beneficios { flex-wrap: wrap; gap: 30px; }
+    .beneficio { width: 45%; }
+
+    .seccion,
+    #vista-catalogo,
+    #vista-contacto { padding-left: 25px; padding-right: 25px; }
+
+    .colecciones,
+    .contacto { grid-template-columns: 1fr; }
+
+    .banner-ia { margin: 50px 25px; flex-direction: column; text-align: center; }
+
+    .chat { right: 10px; left: 10px; width: auto; }
+
+    .checkout,
+    .fila { grid-template-columns: 1fr; }
+
+    .modal-caja { padding: 25px 18px; }
+
+    .metodos { grid-template-columns: 1fr; }
+}
